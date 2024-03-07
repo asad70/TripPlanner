@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
 import {
   fetchWeatherDataForCity,
@@ -6,6 +6,7 @@ import {
 } from "../utils/api";
 import { City } from "../utils/types";
 import { WeatherData } from "../utils/WeatherTypes";
+import { validateDate } from "../utils/utils";
 
 /**
  * Custom hook to fetch weather and description data for a selected city.
@@ -19,7 +20,7 @@ import { WeatherData } from "../utils/WeatherTypes";
 export const useFetchData = (
   selectedCity: City | null,
   forecastDate: Date,
-  setError: (error: string | null) => void
+  setError: React.Dispatch<React.SetStateAction<string | null>>
 ) => {
   const [description, setDescription] = useState("");
   const [weather, setWeather] = useState<WeatherData>();
@@ -28,6 +29,7 @@ export const useFetchData = (
   const cancelTokenSource = useRef(axios.CancelToken.source());
   const descriptionCancelTokenSource = useRef(axios.CancelToken.source());
   const [lastFetchedCity, setLastFetchedCity] = useState<string | null>(null);
+  const [lastFetchedDate, setLastFetchedDate] = useState<Date | null>(null);
 
   /**
    * Validates the selected city.
@@ -47,7 +49,11 @@ export const useFetchData = (
    * Fetches the description of the selected city from Wikipedia.
    */
   const fetchDescription = async () => {
-    if (!validateCity() || lastFetchedCity === selectedCity?.name) {
+    if (
+      !validateDate(forecastDate, setError) ||
+      !validateCity() ||
+      lastFetchedCity === selectedCity?.name
+    ) {
       return;
     }
     setIsDescriptionLoading(true);
@@ -82,6 +88,13 @@ export const useFetchData = (
    * Fetches the weather data for the selected city and date.
    */
   const fetchWeather = async () => {
+    if (
+      !validateDate(forecastDate, setError) ||
+      (lastFetchedDate === forecastDate &&
+        lastFetchedCity === selectedCity?.name)
+    ) {
+      return;
+    }
     setIsWeatherLoading(true);
     // Cancel any ongoing requests
     if (cancelTokenSource.current) {
@@ -89,7 +102,6 @@ export const useFetchData = (
     }
     // Create a new cancel token
     cancelTokenSource.current = axios.CancelToken.source();
-
     try {
       setError(null);
       const weatherData = await fetchWeatherDataForCity(
@@ -98,6 +110,7 @@ export const useFetchData = (
         cancelTokenSource.current.token
       );
       setWeather(weatherData);
+      setLastFetchedDate(forecastDate);
     } catch (error: any) {
       if (axios.isCancel(error)) {
         console.log("Request canceled as selection changed", error?.message);
