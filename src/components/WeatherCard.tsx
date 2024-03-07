@@ -28,7 +28,7 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ weather, heading }) => {
           {heading}
         </Heading>
         <Text>Conditions: {weather?.conditions}</Text>
-        <Text>Feels Like: {weather?.feelslike}</Text>
+        <Text>Feels Like: {weather?.feelslike} °C</Text>
         <Text>Temperature: {weather?.temp} °C</Text>
       </VStack>
     </Box>
