@@ -111,14 +111,14 @@ function App() {
         p={4}
       >
         <Box
-          p={8}
-          maxW="lg"
+          p={{ base: 4, md: 8 }}
+          maxW={{ base: "90%", md: "lg" }}
           borderWidth={1}
           borderRadius="lg"
           bg="white"
           color="gray.800"
-          minH="lg"
-          minW="lg"
+          minH={{ base: "90%", md: "lg" }}
+          minW={{ base: "90%", md: "lg" }}
           transition="all 0.2s"
         >
           <VStack spacing={4} align="stretch">
